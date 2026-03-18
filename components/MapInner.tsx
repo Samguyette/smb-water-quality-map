@@ -58,15 +58,38 @@ export default function MapInner() {
         }
         colorExpr.push("#9ca3af");
 
+        // Find the first layer after "water" to insert glow beneath land
+        const allLayers = map.getStyle().layers;
+        const waterIdx = allLayers.findIndex((l) => l.id === "water");
+        const firstLandLayer =
+          waterIdx >= 0 && waterIdx < allLayers.length - 1
+            ? allLayers[waterIdx + 1].id
+            : undefined;
+
+        // Glow layer: inserted below land so it only shows on water
+        map.addLayer(
+          {
+            id: "stations-glow",
+            type: "circle",
+            source: "stations",
+            paint: {
+              "circle-radius": 70,
+              "circle-color": colorExpr as unknown as string,
+              "circle-blur": 1.5,
+              "circle-opacity": 0.22,
+            },
+          },
+          firstLandLayer,
+        );
+
         map.addLayer({
           id: "stations-layer",
           type: "circle",
           source: "stations",
           paint: {
-            "circle-radius": 11,
+            "circle-radius": 7,
             "circle-color": colorExpr as unknown as string,
-            "circle-stroke-color": "rgba(255,255,255,0.7)",
-            "circle-stroke-width": 1.5,
+            "circle-stroke-width": 0,
             "circle-opacity": 0.88,
           },
         });

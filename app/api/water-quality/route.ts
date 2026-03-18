@@ -9,6 +9,7 @@ const KML_URL =
 const COLOR_TO_STATUS: Record<string, Status> = {
   "009D57": "pass",
   F4EB37: "advisory",
+  C5221F: "closed",
   FFFFFF: "unknown",
 };
 
