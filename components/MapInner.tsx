@@ -214,28 +214,28 @@ function buildPopupHTML(station: Station): string {
   const color = STATUS_COLORS[station.status];
   const label = STATUS_LABELS[station.status];
 
-  const dot = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color};margin-right:6px;flex-shrink:0"></span>`;
-
   const locationRow = station.location
-    ? `<p style="margin:0 0 3px;font-size:11px;color:#6b7280">${station.location}</p>`
+    ? `<p style="margin:0 0 2px;font-size:11px;color:rgba(255,255,255,0.4)">${station.location}</p>`
     : "";
 
   const freqRow = station.inspectionDay
-    ? `<p style="margin:0;font-size:11px;color:#9ca3af">Sampled ${station.inspectionDay}</p>`
+    ? `<p style="margin:0;font-size:11px;color:rgba(255,255,255,0.3)">Sampled ${station.inspectionDay}</p>`
     : "";
 
   return `
-    <div style="padding:14px;font-family:system-ui,sans-serif;min-width:180px;">
-      <p style="font-size:10px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 10px">${station.name}</p>
-      <div style="display:flex;align-items:center;margin-bottom:10px">
-        ${dot}
-        <span style="font-size:13px;font-weight:600;color:#111827">${label}</span>
+    <div style="padding:12px 14px;font-family:system-ui,-apple-system,sans-serif;min-width:160px;">
+      <div style="margin-bottom:8px;padding-right:16px">
+        <span style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.9)">${station.name}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+        <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0"></span>
+        <span style="font-size:11px;font-weight:500;color:rgba(255,255,255,0.6)">${label}</span>
       </div>
       ${locationRow}
       ${freqRow}
       <a href="http://publichealth.lacounty.gov/beach" target="_blank" rel="noopener noreferrer"
-         style="display:block;font-size:10px;color:#2563eb;text-decoration:underline;margin-top:10px">
-        LA County DPH Beach Advisories →
+         style="display:inline-block;font-size:10px;color:rgba(255,255,255,0.3);text-decoration:none;margin-top:8px;transition:color .15s">
+        LA County DPH →
       </a>
     </div>
   `;
