@@ -6,18 +6,18 @@ const MapInner = dynamic(() => import("./MapInner"), {
   ssr: false,
   loading: () => (
     <div className="h-screen flex flex-col">
-      <header className="flex items-center px-5 h-14 border-b bg-white shrink-0">
+      <header className="flex items-center px-5 h-14 border-b bg-zinc-950 border-zinc-800 shrink-0">
         <div className="flex items-center gap-2.5">
           <WaveDot />
-          <h1 className="text-sm font-semibold tracking-tight">
+          <h1 className="text-sm font-semibold tracking-tight text-white">
             Santa Monica Bay Water Quality
           </h1>
         </div>
       </header>
-      <div className="flex-1 flex items-center justify-center bg-zinc-50">
+      <div className="flex-1 flex items-center justify-center bg-zinc-950">
         <div className="flex flex-col items-center gap-3">
           <Spinner />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-zinc-400">
             Fetching water quality data…
           </p>
         </div>
