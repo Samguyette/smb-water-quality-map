@@ -5,20 +5,18 @@ import { useEffect, useRef, useState } from "react";
 import {
   fetchWaterQualityData,
   Station,
-  Grade,
-  GRADE_COLORS,
-  GRADE_LABELS,
-  GRADE_RANGES,
+  Status,
+  STATUS_COLORS,
+  STATUS_LABELS,
 } from "@/lib/waterQuality";
 
-const LEGEND_GRADES: Grade[] = ["A", "B", "C", "D", "F", "N"];
+const LEGEND_STATUSES: Status[] = ["pass", "advisory", "unknown"];
 
 export default function MapInner() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState("");
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -28,16 +26,8 @@ export default function MapInner() {
     const init = async () => {
       const maplibregl = (await import("maplibre-gl")).default;
 
-      const data = await fetchWaterQualityData();
+      const { stations: data } = await fetchWaterQualityData();
       setStations(data);
-      setLastUpdated(
-        new Date().toLocaleString("en-US", {
-          month: "short",
-          day: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-        })
-      );
       setLoading(false);
 
       map = new maplibregl.Map({
@@ -62,9 +52,9 @@ export default function MapInner() {
       map.on("load", () => {
         map.addSource("stations", { type: "geojson", data: geojson });
 
-        const colorExpr: unknown[] = ["match", ["get", "grade"]];
-        for (const [grade, color] of Object.entries(GRADE_COLORS)) {
-          colorExpr.push(grade, color);
+        const colorExpr: unknown[] = ["match", ["get", "status"]];
+        for (const [status, color] of Object.entries(STATUS_COLORS)) {
+          colorExpr.push(status, color);
         }
         colorExpr.push("#9ca3af");
 
@@ -120,15 +110,11 @@ export default function MapInner() {
             Santa Monica Bay Water Quality
           </h1>
         </div>
-        <span className="text-xs text-zinc-500 tabular-nums">
-          {loading
-            ? "Loading data…"
-            : error
-              ? "Failed to load"
-              : lastUpdated
-                ? `Updated ${lastUpdated}`
-                : ""}
-        </span>
+        {(loading || error) && (
+          <span className="text-xs text-zinc-500 tabular-nums">
+            {loading ? "Loading data…" : "Failed to load"}
+          </span>
+        )}
       </header>
 
       {/* ── Map Area ── */}
@@ -172,27 +158,20 @@ export default function MapInner() {
               Water Quality
             </p>
             <div className="space-y-1.5">
-              {LEGEND_GRADES.map((grade) => (
-                <div key={grade} className="flex items-center gap-2.5">
+              {LEGEND_STATUSES.map((status) => (
+                <div key={status} className="flex items-center gap-2.5">
                   <span
                     className="h-2.5 w-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: GRADE_COLORS[grade] }}
+                    style={{ backgroundColor: STATUS_COLORS[status] }}
                   />
                   <span className="text-white/70 font-medium">
-                    {GRADE_LABELS[grade]}
+                    {STATUS_LABELS[status]}
                   </span>
-                  {GRADE_RANGES[grade] && (
-                    <span className="text-white/30 ml-auto pl-3 tabular-nums">
-                      {GRADE_RANGES[grade]}
-                    </span>
-                  )}
                 </div>
               ))}
             </div>
             <div className="mt-3 pt-2.5 border-t border-white/10 text-[10px] text-white/30 leading-relaxed">
-              CA Beach Action Value: 104 CFU/100mL
-              <br />
-              Source: EPA Water Quality Portal
+              Source: LA County Dept. of Public Health
             </div>
           </div>
         )}
@@ -200,7 +179,7 @@ export default function MapInner() {
         {/* Empty state */}
         {!loading && !error && stations.length === 0 && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-black/60 border border-white/10 rounded-lg shadow-sm px-4 py-2.5 text-xs text-white/60">
-            No Enterococcus monitoring data found for the past 12 months.
+            No monitoring data found.
           </div>
         )}
       </div>
@@ -209,46 +188,34 @@ export default function MapInner() {
 }
 
 function buildPopupHTML(station: Station): string {
-  const color = GRADE_COLORS[station.grade];
-  const label = GRADE_LABELS[station.grade];
-  const range = GRADE_RANGES[station.grade];
-  const gradeDisplay = station.grade === "N" ? "–" : station.grade;
+  const color = STATUS_COLORS[station.status];
+  const label = STATUS_LABELS[station.status];
 
-  const sampleRows =
-    station.value !== null || station.date
-      ? `<div style="font-size:11px;border-top:1px solid #f3f4f6;padding-top:10px;margin-top:10px;">
-          ${station.value !== null ? `<p style="margin:0 0 3px"><span style="color:#9ca3af">Count </span><span style="color:#374151;font-weight:600">${station.value.toLocaleString()} ${station.unit}</span></p>` : ""}
-          ${station.date ? `<p style="margin:0"><span style="color:#9ca3af">Sampled </span><span style="color:#374151">${formatDate(station.date)}</span></p>` : ""}
-        </div>`
-      : "";
+  const dot = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color};margin-right:6px;flex-shrink:0"></span>`;
+
+  const locationRow = station.location
+    ? `<p style="margin:0 0 3px;font-size:11px;color:#6b7280">${station.location}</p>`
+    : "";
+
+  const freqRow = station.inspectionDay
+    ? `<p style="margin:0;font-size:11px;color:#9ca3af">Sampled ${station.inspectionDay}</p>`
+    : "";
 
   return `
     <div style="padding:14px;font-family:system-ui,sans-serif;min-width:180px;">
       <p style="font-size:10px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 10px">${station.name}</p>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-        <span style="font-size:34px;font-weight:700;color:${color};line-height:1">${gradeDisplay}</span>
-        <div style="font-size:11px;color:#6b7280">
-          <p style="margin:0 0 2px;font-weight:500;color:#374151">${label}</p>
-          ${range ? `<p style="margin:0">${range}</p>` : ""}
-        </div>
+      <div style="display:flex;align-items:center;margin-bottom:10px">
+        ${dot}
+        <span style="font-size:13px;font-weight:600;color:#111827">${label}</span>
       </div>
-      ${sampleRows}
+      ${locationRow}
+      ${freqRow}
       <a href="http://publichealth.lacounty.gov/beach" target="_blank" rel="noopener noreferrer"
          style="display:block;font-size:10px;color:#2563eb;text-decoration:underline;margin-top:10px">
         LA County DPH Beach Advisories →
       </a>
     </div>
   `;
-}
-
-function formatDate(iso: string): string {
-  if (!iso) return "";
-  const [y, m, d] = iso.split("-");
-  if (!y || !m || !d) return iso;
-  return new Date(Number(y), Number(m) - 1, Number(d)).toLocaleDateString(
-    "en-US",
-    { month: "short", day: "numeric", year: "numeric" }
-  );
 }
 
 function WaveDot() {
