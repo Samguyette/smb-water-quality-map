@@ -10,7 +10,7 @@ import {
   STATUS_LABELS,
 } from "@/lib/waterQuality";
 
-const LEGEND_STATUSES: Status[] = ["pass", "advisory", "unknown"];
+const LEGEND_STATUSES: Status[] = ["pass", "advisory", "closed", "unknown"];
 
 export default function MapInner() {
   const containerRef = useRef<HTMLDivElement>(null);

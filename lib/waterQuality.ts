@@ -1,4 +1,4 @@
-export type Status = "pass" | "advisory" | "unknown";
+export type Status = "pass" | "advisory" | "closed" | "unknown";
 
 export interface Station {
   id: string;
@@ -13,12 +13,14 @@ export interface Station {
 export const STATUS_COLORS: Record<Status, string> = {
   pass: "#16a34a",
   advisory: "#d97706",
+  closed: "#dc2626",
   unknown: "#9ca3af",
 };
 
 export const STATUS_LABELS: Record<Status, string> = {
   pass: "Meets State Standards",
   advisory: "Elevated Bacteria",
+  closed: "Closed",
   unknown: "No Data",
 };
 
